@@ -18,12 +18,10 @@
 
 #include "platform/XWindowsScreen.h"
 
-#include "platform/XWindowsClipboard.h"
 #include "platform/XWindowsEventQueueBuffer.h"
 #include "platform/XWindowsKeyState.h"
 #include "platform/XWindowsScreenSaver.h"
 #include "platform/XWindowsUtil.h"
-#include "synergy/Clipboard.h"
 #include "synergy/KeyMap.h"
 #include "synergy/ClientApp.h"
 #include "synergy/ClientArgs.h"
@@ -189,11 +187,6 @@ XWindowsScreen::XWindowsScreen(
         m_powerManager.disableSleep();
     }
 
-	// initialize the clipboards
-	for (ClipboardID id = 0; id < kClipboardEnd; ++id) {
-		m_clipboard[id] = new XWindowsClipboard(m_display, m_window, id);
-	}
-
 	// install event handlers
 	m_events->adoptHandler(Event::kSystem, m_events->getSystemTarget(),
 							new TMethodEventJob<XWindowsScreen>(this,
@@ -211,9 +204,7 @@ XWindowsScreen::~XWindowsScreen()
 
 	m_events->adoptBuffer(NULL);
 	m_events->removeHandler(Event::kSystem, m_events->getSystemTarget());
-	for (ClipboardID id = 0; id < kClipboardEnd; ++id) {
-		delete m_clipboard[id];
-	}
+
 	delete m_keyState;
 	delete m_screensaver;
 	m_keyState    = NULL;
@@ -390,33 +381,6 @@ XWindowsScreen::leave()
 	return true;
 }
 
-bool
-XWindowsScreen::setClipboard(ClipboardID id, const IClipboard* clipboard)
-{
-	// fail if we don't have the requested clipboard
-	if (m_clipboard[id] == NULL) {
-		return false;
-	}
-
-	// get the actual time.  ICCCM does not allow CurrentTime.
-	Time timestamp = XWindowsUtil::getCurrentTime(
-								m_display, m_clipboard[id]->getWindow());
-
-	if (clipboard != NULL) {
-		// save clipboard data
-		return Clipboard::copy(m_clipboard[id], clipboard, timestamp);
-	}
-	else {
-		// assert clipboard ownership
-		if (!m_clipboard[id]->open(timestamp)) {
-			return false;
-		}
-		m_clipboard[id]->empty();
-		m_clipboard[id]->close();
-		return true;
-	}
-}
-
 void
 XWindowsScreen::checkClipboards()
 {
@@ -496,24 +460,6 @@ void*
 XWindowsScreen::getEventTarget() const
 {
 	return const_cast<XWindowsScreen*>(this);
-}
-
-bool
-XWindowsScreen::getClipboard(ClipboardID id, IClipboard* clipboard) const
-{
-	assert(clipboard != NULL);
-
-	// fail if we don't have the requested clipboard
-	if (m_clipboard[id] == NULL) {
-		return false;
-	}
-
-	// get the actual time.  ICCCM does not allow CurrentTime.
-	Time timestamp = XWindowsUtil::getCurrentTime(
-								m_display, m_clipboard[id]->getWindow());
-
-	// copy the clipboard
-	return Clipboard::copy(clipboard, m_clipboard[id], timestamp);
 }
 
 void
@@ -1196,15 +1142,6 @@ XWindowsScreen::sendEvent(Event::Type type, void* data)
 	m_events->addEvent(Event(type, getEventTarget(), data));
 }
 
-void
-XWindowsScreen::sendClipboardEvent(Event::Type type, ClipboardID id)
-{
-	ClipboardInfo* info   = (ClipboardInfo*)malloc(sizeof(ClipboardInfo));
-	info->m_id             = id;
-	info->m_sequenceNumber = m_sequenceNumber;
-	sendEvent(type, info);
-}
-
 IKeyState*
 XWindowsScreen::getKeyState() const
 {
@@ -1364,15 +1301,7 @@ XWindowsScreen::handleSystemEvent(const Event& event, void*)
 
 	case SelectionClear:
 		{
-			// we just lost the selection.  that means someone else
-			// grabbed the selection so this screen is now the
-			// selection owner.  report that to the receiver.
-			ClipboardID id = getClipboardID(xevent->xselectionclear.selection);
-			if (id != kClipboardEnd) {
-				m_clipboard[id]->lost(xevent->xselectionclear.time);
-				sendClipboardEvent(m_events->forClipboard().clipboardGrabbed(), id);
-				return;
-			}
+
 		}
 		break;
 
@@ -1390,34 +1319,18 @@ XWindowsScreen::handleSystemEvent(const Event& event, void*)
 
 	case SelectionRequest:
 		{
-			// somebody is asking for clipboard data
-			ClipboardID id = getClipboardID(
-								xevent->xselectionrequest.selection);
-			if (id != kClipboardEnd) {
-				m_clipboard[id]->addRequest(
-								xevent->xselectionrequest.owner,
-								xevent->xselectionrequest.requestor,
-								xevent->xselectionrequest.target,
-								xevent->xselectionrequest.time,
-								xevent->xselectionrequest.property);
-				return;
-			}
+
 		}
 		break;
 
 	case PropertyNotify:
 		// property delete may be part of a selection conversion
-		if (xevent->xproperty.state == PropertyDelete) {
-			processClipboardRequest(xevent->xproperty.window,
-								xevent->xproperty.time,
-								xevent->xproperty.atom);
-		}
+
 		break;
 
 	case DestroyNotify:
 		// looks like one of the windows that requested a clipboard
 		// transfer has gone bye-bye.
-		destroyClipboardRequest(xevent->xdestroywindow.window);
 		break;
 
 	case KeyPress:
@@ -1750,43 +1663,6 @@ XWindowsScreen::createBlankCursor() const
 	XFreePixmap(m_display, bitmap);
 
 	return cursor;
-}
-
-ClipboardID
-XWindowsScreen::getClipboardID(Atom selection) const
-{
-	for (ClipboardID id = 0; id < kClipboardEnd; ++id) {
-		if (m_clipboard[id] != NULL &&
-			m_clipboard[id]->getSelection() == selection) {
-			return id;
-		}
-	}
-	return kClipboardEnd;
-}
-
-void
-XWindowsScreen::processClipboardRequest(Window requestor,
-				Time time, Atom property)
-{
-	// check every clipboard until one returns success
-	for (ClipboardID id = 0; id < kClipboardEnd; ++id) {
-		if (m_clipboard[id] != NULL &&
-			m_clipboard[id]->processRequest(requestor, time, property)) {
-			break;
-		}
-	}
-}
-
-void
-XWindowsScreen::destroyClipboardRequest(Window requestor)
-{
-	// check every clipboard until one returns success
-	for (ClipboardID id = 0; id < kClipboardEnd; ++id) {
-		if (m_clipboard[id] != NULL &&
-			m_clipboard[id]->destroyRequest(requestor)) {
-			break;
-		}
-	}
 }
 
 void

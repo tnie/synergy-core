@@ -51,8 +51,6 @@ ServerConfig::ServerConfig(int numColumns, int numRows, AppConfig* appConfig, Ma
         m_IgnoreAutoConfigClient(false),
         m_EnableDragAndDrop(false),
         m_DisableLockToScreen(false),
-        m_ClipboardSharing(true),
-        m_ClipboardSharingSize(defaultClipboardSharingSize()),
         m_pMainWindow(mainWindow)
 {
     GUI::Config::ConfigWriter::make()->registerClass(this);
@@ -100,8 +98,6 @@ bool ServerConfig::operator==(const ServerConfig& sc) const
            m_IgnoreAutoConfigClient == sc.m_IgnoreAutoConfigClient &&
            m_EnableDragAndDrop      == sc.m_EnableDragAndDrop      &&
            m_DisableLockToScreen    == sc.m_DisableLockToScreen    &&
-           m_ClipboardSharing       == sc.m_ClipboardSharing       &&
-           m_ClipboardSharingSize   == sc.m_ClipboardSharingSize   &&
            m_pMainWindow            == sc.m_pMainWindow;
 }
 
@@ -147,8 +143,6 @@ void ServerConfig::saveSettings()
     settings().setValue("ignoreAutoConfigClient", ignoreAutoConfigClient());
     settings().setValue("disableLockToScreen", disableLockToScreen());
     settings().setValue("enableDragAndDrop", enableDragAndDrop());
-    settings().setValue("clipboardSharing", clipboardSharing());
-    settings().setValue("clipboardSharingSize", QVariant::fromValue(clipboardSharingSize()));
 
     writeSettings(settings(), switchCorners(), "switchCorner");
 
@@ -201,9 +195,6 @@ void ServerConfig::loadSettings()
     setIgnoreAutoConfigClient(settings().value("ignoreAutoConfigClient").toBool());
     setDisableLockToScreen(settings().value("disableLockToScreen", false).toBool());
     setEnableDragAndDrop(settings().value("enableDragAndDrop", false).toBool());
-	setClipboardSharingSize(settings().value("clipboardSharingSize",
-						(int) ServerConfig::defaultClipboardSharingSize()).toULongLong());
-    setClipboardSharing(settings().value("clipboardSharing", true).toBool());
 
     readSettings(settings(), switchCorners(), "switchCorner", false, NumSwitchCorners);
 
@@ -293,8 +284,6 @@ QTextStream& operator<<(QTextStream& outStream, const ServerConfig& config)
     outStream << "\t" << "relativeMouseMoves = " << (config.relativeMouseMoves() ? "true" : "false") << endl;
     outStream << "\t" << "win32KeepForeground = " << (config.win32KeepForeground() ? "true" : "false") << endl;
     outStream << "\t" << "disableLockToScreen = " << (config.disableLockToScreen() ? "true" : "false") << endl;
-    outStream << "\t" << "clipboardSharing = " << (config.clipboardSharing() ? "true" : "false") << endl;
-    outStream << "\t" << "clipboardSharingSize = " << config.clipboardSharingSize() << endl;
 
     if (config.hasSwitchDelay())
         outStream << "\t" << "switchDelay = " << config.switchDelay() << endl;
@@ -534,24 +523,6 @@ void::ServerConfig::addToFirstEmptyGrid(const QString &clientName)
             break;
         }
     }
-}
-
-size_t ServerConfig::defaultClipboardSharingSize() {
-	return 3 * 1024; // 3 MiB
-}
-
-size_t ServerConfig::setClipboardSharingSize(size_t size) {
-	if (size) {
-		size += 512; // Round up to the nearest megabyte
-		size /= 1024;
-		size *= 1024;
-		setClipboardSharing(true);
-	} else {
-		setClipboardSharing(false);
-	}
-	using std::swap;
-	swap (size, m_ClipboardSharingSize);
-	return size;
 }
 
 QSettings &ServerConfig::settings() {

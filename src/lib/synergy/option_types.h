@@ -67,7 +67,6 @@ static const OptionID    kOptionScreenPreserveFocus        = OPTION_CODE("SFOC")
 static const OptionID    kOptionRelativeMouseMoves        = OPTION_CODE("MDLT");
 static const OptionID    kOptionWin32KeepForeground        = OPTION_CODE("_KFW");
 static const OptionID    kOptionDisableLockToScreen    = OPTION_CODE("DLTS");
-static const OptionID   kOptionClipboardSharingSize     = OPTION_CODE("CLSZ");
 //@}
 
 //! @name Screen switch corner enumeration

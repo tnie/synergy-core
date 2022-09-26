@@ -71,9 +71,6 @@ class ServerConfig : public BaseConfig, public GUI::Config::ConfigBase
         bool ignoreAutoConfigClient() const { return m_IgnoreAutoConfigClient; }
         bool enableDragAndDrop() const { return m_EnableDragAndDrop; }
         bool disableLockToScreen() const { return m_DisableLockToScreen; }
-        bool clipboardSharing() const { return m_ClipboardSharing; }
-        size_t clipboardSharingSize() const { return m_ClipboardSharingSize; }
-        static size_t defaultClipboardSharingSize();
 
         void saveSettings() override;
         void loadSettings() override;
@@ -110,10 +107,8 @@ class ServerConfig : public BaseConfig, public GUI::Config::ConfigBase
         void setIgnoreAutoConfigClient(bool on) { m_IgnoreAutoConfigClient = on; }
         void setEnableDragAndDrop(bool on) { m_EnableDragAndDrop = on; }
         void setDisableLockToScreen(bool on) { m_DisableLockToScreen = on; }
-        void setClipboardSharing(bool on) { m_ClipboardSharing = on; }
         void setConfigFile(const QString& configFile);
         void setUseExternalConfig(bool useExternalConfig);
-        size_t setClipboardSharingSize(size_t size);
         QList<bool>& switchCorners() { return m_SwitchCorners; }
         HotkeyList& hotkeys() { return m_Hotkeys; }
 
@@ -145,8 +140,6 @@ class ServerConfig : public BaseConfig, public GUI::Config::ConfigBase
         bool m_IgnoreAutoConfigClient;
         bool m_EnableDragAndDrop;
         bool m_DisableLockToScreen;
-        bool m_ClipboardSharing;
-        size_t m_ClipboardSharingSize;
         MainWindow* m_pMainWindow;
 };
 

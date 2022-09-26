@@ -192,7 +192,6 @@ private: // HACK
     bool                onMouseWheel(SInt32 xDelta, SInt32 yDelta);
     bool                onScreensaver(bool activated);
     bool                onDisplayChange();
-    bool                onClipboardChange();
 
     // warp cursor without discarding queued events
     void                warpCursorNoFlush(SInt32 x, SInt32 y);

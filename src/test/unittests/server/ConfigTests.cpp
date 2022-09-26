@@ -66,10 +66,6 @@ TEST(ServerConfigTests, serverconfig_will_deem_equal_configs_with_same_cell_name
     EXPECT_TRUE(b.addScreen("screenC"));
     EXPECT_TRUE(b.connect("screenA", EDirection::kBottom, 0.0f, 0.5f, "screenB", 0.5f, 1.0f));
     EXPECT_TRUE(b.connect("screenB", EDirection::kLeft, 0.0f, 0.5f, "screenB", 0.5f, 1.0f));
-    a.addOption("screenA", kOptionClipboardSharing, 1);
-    b.addOption("screenA", kOptionClipboardSharing, 1);
-    a.addOption(std::string(), kOptionClipboardSharing, 1);
-    b.addOption(std::string(), kOptionClipboardSharing, 1);
     a.getInputFilter()->addFilterRule(InputFilter::Rule{new OnlySystemFilter()});
     b.getInputFilter()->addFilterRule(InputFilter::Rule{new OnlySystemFilter()});
     a.addAlias("screenA", "aliasA");
@@ -146,8 +142,6 @@ TEST(ServerConfigTests, serverconfig_will_deem_different_configs_with_same_cell_
     Config b(nullptr);
     a.addScreen("screenA");
     b.addScreen("screenA");
-    a.addOption("screenA", kOptionClipboardSharing, 0);
-    b.addOption("screenA", kOptionClipboardSharing, 1);
     EXPECT_FALSE(a == b);
     EXPECT_FALSE(b == a);
 }
@@ -181,8 +175,6 @@ TEST(ServerConfigTests, serverconfig_will_deem_different_configs_with_different_
     Config b(nullptr);
     a.addScreen("screenA");
     b.addScreen("screenA");
-    a.addOption(std::string(), kOptionClipboardSharing, 0);
-    b.addOption(std::string(), kOptionClipboardSharing, 1);
     EXPECT_FALSE(a == b);
     EXPECT_FALSE(b == a);
 }

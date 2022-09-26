@@ -20,12 +20,10 @@
 
 #include "platform/MSWindowsDropTarget.h"
 #include "client/Client.h"
-#include "platform/MSWindowsClipboard.h"
 #include "platform/MSWindowsDesks.h"
 #include "platform/MSWindowsEventQueueBuffer.h"
 #include "platform/MSWindowsKeyState.h"
 #include "platform/MSWindowsScreenSaver.h"
-#include "synergy/Clipboard.h"
 #include "synergy/KeyMap.h"
 #include "synergy/XScreen.h"
 #include "synergy/App.h"
@@ -1050,14 +1048,6 @@ MSWindowsScreen::onEvent(HWND, UINT msg,
                 WPARAM wParam, LPARAM lParam, LRESULT* result)
 {
     switch (msg) {
-    case WM_DRAWCLIPBOARD:
-        // first pass on the message
-        if (m_nextClipboardWindow != NULL) {
-            SendMessage(m_nextClipboardWindow, msg, wParam, lParam);
-        }
-
-        // now handle the message
-        return onClipboardChange();
 
     case WM_CHANGECBCHAIN:
         if (m_nextClipboardWindow == (HWND)wParam) {
@@ -1487,27 +1477,6 @@ MSWindowsScreen::onDisplayChange()
         sendEvent(m_events->forIScreen().shapeChanged());
 
         LOG((CLOG_DEBUG "screen shape: %d,%d %dx%d %s", m_x, m_y, m_w, m_h, m_multimon ? "(multi-monitor)" : ""));
-    }
-
-    return true;
-}
-
-bool
-MSWindowsScreen::onClipboardChange()
-{
-    // now notify client that somebody changed the clipboard (unless
-    // we're the owner).
-    if (!MSWindowsClipboard::isOwnedBySynergy()) {
-        if (m_ownClipboard) {
-            LOG((CLOG_DEBUG "clipboard changed: lost ownership"));
-            m_ownClipboard = false;
-            sendClipboardEvent(m_events->forClipboard().clipboardGrabbed(), kClipboardClipboard);
-            sendClipboardEvent(m_events->forClipboard().clipboardGrabbed(), kClipboardSelection);
-        }
-    }
-    else if (!m_ownClipboard) {
-        LOG((CLOG_DEBUG "clipboard changed: synergy owned"));
-        m_ownClipboard = true;
     }
 
     return true;

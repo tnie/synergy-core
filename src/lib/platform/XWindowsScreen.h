@@ -2,11 +2,11 @@
  * synergy -- mouse and keyboard sharing utility
  * Copyright (C) 2012-2016 Symless Ltd.
  * Copyright (C) 2002 Chris Schoeneman
- * 
+ *
  * This package is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * found in the file LICENSE that should have accompanied this file.
- * 
+ *
  * This package is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -52,7 +52,6 @@ public:
 
     // IScreen overrides
     virtual void*        getEventTarget() const;
-    virtual bool        getClipboard(ClipboardID id, IClipboard*) const;
     virtual void        getShape(SInt32& x, SInt32& y,
                             SInt32& width, SInt32& height) const;
     virtual void        getCursorPos(SInt32& x, SInt32& y) const;
@@ -79,7 +78,6 @@ public:
     virtual void        disable();
     virtual void        enter();
     virtual bool        leave();
-    virtual bool        setClipboard(ClipboardID, const IClipboard*);
     virtual void        checkClipboards();
     virtual void        openScreensaver(bool notify);
     virtual void        closeScreensaver();
@@ -99,21 +97,9 @@ protected:
 private:
     // event sending
     void                sendEvent(Event::Type, void* = NULL);
-    void                sendClipboardEvent(Event::Type, ClipboardID);
 
     // create the transparent cursor
     Cursor                createBlankCursor() const;
-
-    // determine the clipboard from the X selection.  returns
-    // kClipboardEnd if no such clipboard.
-    ClipboardID            getClipboardID(Atom selection) const;
-
-    // continue processing a selection request
-    void                processClipboardRequest(Window window,
-                            Time time, Atom property);
-
-    // terminate a selection request
-    void                destroyClipboardRequest(Window window);
 
     // X I/O error handler
     void                onError();
@@ -214,7 +200,6 @@ private:
     FilteredKeycodes    m_filtered;
 
     // clipboards
-    XWindowsClipboard*    m_clipboard[kClipboardEnd];
     UInt32                m_sequenceNumber;
 
     // screen saver stuff

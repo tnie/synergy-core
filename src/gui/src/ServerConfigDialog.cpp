@@ -63,11 +63,6 @@ ServerConfigDialog::ServerConfigDialog(QWidget* parent, ServerConfig& config) :
 
     m_pCheckBoxIgnoreAutoConfigClient->setChecked(serverConfig().ignoreAutoConfigClient());
 
-    m_pCheckBoxEnableClipboard->setChecked(serverConfig().clipboardSharing());
-	int clipboardSharingSizeM = static_cast<int>(serverConfig().clipboardSharingSize() / 1024);
-    m_pSpinBoxClipboardSizeLimit->setValue(clipboardSharingSizeM);
-	m_pSpinBoxClipboardSizeLimit->setEnabled(serverConfig().clipboardSharing());
-
     foreach(const Hotkey& hotkey, serverConfig().hotkeys())
         m_pListHotkeys->addItem(hotkey.text());
 
@@ -102,11 +97,7 @@ ServerConfigDialog::ServerConfigDialog(QWidget* parent, ServerConfig& config) :
             this, [this]( const int& v ) { serverConfig().haveSwitchDoubleTap(v);                      onChange();});
     connect(m_pSpinBoxSwitchDoubleTap,    static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),
             this, [this]( const int& v ) { serverConfig().setSwitchDoubleTap(v);                       onChange();});
-    connect(m_pCheckBoxEnableClipboard,                                        &QCheckBox::stateChanged,
-            this, [this]( const int& v ) { serverConfig().setClipboardSharing(v);                      onChange();});
-    connect(m_pSpinBoxClipboardSizeLimit, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),
-            this, [this]( const int& v ) { serverConfig().setClipboardSharingSize(v * 1024);           onChange();});
-    connect(m_pCheckBoxHeartbeat,                                              &QCheckBox::stateChanged,
+   connect(m_pCheckBoxHeartbeat,                                              &QCheckBox::stateChanged,
             this, [this]( const int& v ) { serverConfig().haveHeartbeat(v);                            onChange();});
     connect(m_pSpinBoxHeartbeat,          static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),
             this, [this]( const int& v ) { serverConfig().setHeartbeat(v);                             onChange();});
@@ -300,15 +291,6 @@ void ServerConfigDialog::on_m_pButtonRemoveAction_clicked()
     hotkey.actions().removeAt(idxAction);
     delete m_pListActions->currentItem();
     onChange();
-}
-
-void ServerConfigDialog::on_m_pCheckBoxEnableClipboard_stateChanged(int const state)
-{
-    m_pSpinBoxClipboardSizeLimit->setEnabled (state == Qt::Checked);
-    if ((state == Qt::Checked) && (!m_pSpinBoxClipboardSizeLimit->value())) {
-        int size = static_cast<int>((serverConfig().defaultClipboardSharingSize() + 512) / 1024);
-        m_pSpinBoxClipboardSizeLimit->setValue (size ? size : 1);
-    }
 }
 
 void ServerConfigDialog::on_m_pListActions_itemSelectionChanged()

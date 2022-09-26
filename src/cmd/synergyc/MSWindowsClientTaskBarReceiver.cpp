@@ -20,7 +20,6 @@
 
 #include "resource.h"
 #include "client/Client.h"
-#include "platform/MSWindowsClipboard.h"
 #include "platform/MSWindowsScreen.h"
 #include "arch/win32/ArchTaskBarWindows.h"
 #include "arch/win32/ArchMiscWindows.h"
@@ -238,11 +237,6 @@ MSWindowsClientTaskBarReceiver::copyLog() const
 
         // copy log to clipboard
         if (!data.empty()) {
-            MSWindowsClipboard clipboard(m_window);
-            clipboard.open(0);
-            clipboard.emptyUnowned();
-            clipboard.add(IClipboard::kText, data);
-            clipboard.close();
         }
     }
 }
