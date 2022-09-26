@@ -68,11 +68,6 @@ ServerProxy::ServerProxy(Client* client, synergy::IStream* stream, IEventQueue* 
                             new TMethodEventJob<ServerProxy>(this,
                                 &ServerProxy::handleData));
 
-    m_events->adoptHandler(m_events->forClipboard().clipboardSending(),
-                            this,
-                            new TMethodEventJob<ServerProxy>(this,
-                                &ServerProxy::handleClipboardSendingEvent));
-
     // send heartbeat
     setKeepAliveRate(kKeepAliveRate);
 }
@@ -295,7 +290,7 @@ ServerProxy::parseMessage(const UInt8* code)
     }
 
     else if (memcmp(code, kMsgCClipboard, 4) == 0) {
-        grabClipboard();
+        //grabClipboard();
     }
 
     else if (memcmp(code, kMsgCScreenSaver, 4) == 0) {
@@ -311,7 +306,7 @@ ServerProxy::parseMessage(const UInt8* code)
     }
 
     else if (memcmp(code, kMsgDClipboard, 4) == 0) {
-        setClipboard();
+        //setClipboard();
     }
 
     else if (memcmp(code, kMsgCResetOptions, 4) == 0) {
@@ -556,50 +551,6 @@ ServerProxy::leave()
 
     // forward
     m_client->leave();
-}
-
-void
-ServerProxy::setClipboard()
-{
-    // parse
-    static String dataCached;
-    ClipboardID id;
-    UInt32 seq;
-    
-    int r = ClipboardChunk::assemble(m_stream, dataCached, id, seq);
-
-    if (r == kStart) {
-        size_t size = ClipboardChunk::getExpectedSize();
-        LOG((CLOG_DEBUG "receiving clipboard %d size=%d", id, size));
-    }
-    else if (r == kFinish) {
-        LOG((CLOG_DEBUG "received clipboard %d size=%d", id, dataCached.size()));
-        
-        // forward
-        Clipboard clipboard;
-        clipboard.unmarshall(dataCached, 0);
-        m_client->setClipboard(id, &clipboard);
-
-        LOG((CLOG_INFO "clipboard was updated"));
-    }
-}
-
-void
-ServerProxy::grabClipboard()
-{
-    // parse
-    ClipboardID id;
-    UInt32 seqNum;
-    ProtocolUtil::readf(m_stream, kMsgCClipboard + 4, &id, &seqNum);
-    LOG((CLOG_DEBUG "recv grab clipboard %d", id));
-
-    // validate
-    if (id >= kClipboardEnd) {
-        return;
-    }
-
-    // forward
-    m_client->grabClipboard(id);
 }
 
 void
@@ -896,12 +847,6 @@ ServerProxy::dragInfoReceived()
     ProtocolUtil::readf(m_stream, kMsgDDragInfo + 4, &fileNum, &content);
 
     m_client->dragInfoReceived(fileNum, content);
-}
-
-void
-ServerProxy::handleClipboardSendingEvent(const Event& event, void*)
-{
-    ClipboardChunk::send(m_stream, event.getDataObject());
 }
 
 void

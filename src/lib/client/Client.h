@@ -194,7 +194,6 @@ private:
     void                handleOutputError(const Event&, void*);
     void                handleDisconnected(const Event&, void*);
     void                handleShapeChanged(const Event&, void*);
-    void                handleClipboardGrabbed(const Event&, void*);
     bool                isCompatible(int major, int minor) const;
     void                handleHello(const Event&, void*);
     void                handleSuspend(const Event& event, void*);
@@ -230,8 +229,6 @@ private:
     AutoThread          m_writeToDropDirThread;
     TCPSocket*          m_socket;
     bool                m_useSecureNetwork;
-    bool                m_enableClipboard;
-    size_t              m_maximumClipboardSize;
     lib::synergy::ClientArgs          m_args;
     size_t              m_resolvedAddressesCount = 0;
 };

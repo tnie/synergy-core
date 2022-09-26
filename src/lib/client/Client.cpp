@@ -76,9 +76,7 @@ Client::Client(
     m_writeToDropDirThread(nullptr),
     m_socket(NULL),
     m_useSecureNetwork(args.m_enableCrypto),
-    m_args(args),
-    m_enableClipboard(true),
-	m_maximumClipboardSize(INT_MAX)
+    m_args(args)
 {
     assert(m_socketFactory != NULL);
     assert(m_screen        != NULL);
@@ -264,15 +262,6 @@ Client::leave()
     m_active = false;
 
     m_screen->leave();
-    
-    if (m_enableClipboard) {
-        // send clipboards that we own and that have changed
-        for (ClipboardID id = 0; id < kClipboardEnd; ++id) {
-            if (m_ownClipboard[id]) {
-                sendClipboard(id);
-            }
-        }
-    }
 
     return true;
 }
@@ -341,31 +330,6 @@ Client::resetOptions()
 void
 Client::setOptions(const OptionsList& options)
 {
-    for (OptionsList::const_iterator index = options.begin();
-         index != options.end(); ++index) {
-        const OptionID id       = *index;
-        if (id == kOptionClipboardSharing) {
-            index++;
-            if (index != options.end()) {
-				if (!*index) {
-					LOG((CLOG_NOTE "clipboard sharing disabled by server"));
-                }
-                m_enableClipboard = *index;
-            }
-        } else if (id == kOptionClipboardSharingSize) {
-            index++;
-            if (index != options.end()) {
-				m_maximumClipboardSize = *index;
-            }
-        }
-    }
-
-    if (m_enableClipboard && !m_maximumClipboardSize) {
-        m_enableClipboard = false;
-        LOG((CLOG_NOTE "clipboard sharing is disabled because the server "
-                       "set the maximum clipboard size to 0"));
-    }
-
     m_screen->setOptions(options);
 }
 
@@ -467,10 +431,6 @@ Client::setupScreen()
                             getEventTarget(),
                             new TMethodEventJob<Client>(this,
                                 &Client::handleShapeChanged));
-    m_events->adoptHandler(m_events->forClipboard().clipboardGrabbed(),
-                            getEventTarget(),
-                            new TMethodEventJob<Client>(this,
-                                &Client::handleClipboardGrabbed));
 }
 
 void
@@ -565,13 +525,6 @@ Client::handleConnected(const Event&, void*)
     LOG((CLOG_DEBUG1 "connected;  wait for hello"));
     cleanupConnecting();
     setupConnection();
-
-    // reset clipboard state
-    for (ClipboardID id = 0; id < kClipboardEnd; ++id) {
-        m_ownClipboard[id]  = false;
-        m_sentClipboard[id] = false;
-        m_timeClipboard[id] = 0;
-    }
 }
 
 void
@@ -624,31 +577,6 @@ Client::handleShapeChanged(const Event&, void*)
 {
     LOG((CLOG_DEBUG "resolution changed"));
     m_server->onInfoChanged();
-}
-
-void
-Client::handleClipboardGrabbed(const Event& event, void*)
-{
-    if (!m_enableClipboard || (m_maximumClipboardSize == 0)) {
-        return;
-    }
-
-    const IScreen::ClipboardInfo* info =
-        static_cast<const IScreen::ClipboardInfo*>(event.getData());
-
-    // grab ownership
-    m_server->onGrabClipboard(info->m_id);
-
-    // we now own the clipboard and it has not been sent to the server
-    m_ownClipboard[info->m_id]  = true;
-    m_sentClipboard[info->m_id] = false;
-    m_timeClipboard[info->m_id] = 0;
-
-    // if we're not the active screen then send the clipboard now,
-    // otherwise we'll wait until we leave.
-    if (!m_active) {
-        sendClipboard(info->m_id);
-    }
 }
 
 bool

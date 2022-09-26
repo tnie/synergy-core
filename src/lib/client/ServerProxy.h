@@ -92,8 +92,6 @@ private:
     // message handlers
     void                enter();
     void                leave();
-    void                setClipboard();
-    void                grabClipboard();
     void                keyDown(UInt16 id, UInt16 mask, UInt16 button, const String& lang);
     void                keyRepeat();
     void                keyUp();
@@ -109,7 +107,6 @@ private:
     void                infoAcknowledgment();
     void                fileChunkReceived();
     void                dragInfoReceived();
-    void                handleClipboardSendingEvent(const Event&, void*);
     void                secureInputNotification();
     void                setServerLanguages();
     void                setActiveServerLanguage(const String& language);
