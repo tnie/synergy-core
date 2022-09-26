@@ -199,12 +199,6 @@ ClientProxy1_0::parseMessage(const UInt8* code)
         LOG((CLOG_DEBUG2 "no-op from", getName().c_str()));
         return true;
     }
-    else if (memcmp(code, kMsgCClipboard, 4) == 0) {
-        return recvGrabClipboard();
-    }
-    else if (memcmp(code, kMsgDClipboard, 4) == 0) {
-        return recvClipboard();
-    }
     return false;
 }
 
@@ -423,49 +417,4 @@ ClientProxy1_0::recvInfo()
     LOG((CLOG_DEBUG1 "send info ack to \"%s\"", getName().c_str()));
     ProtocolUtil::writef(getStream(), kMsgCInfoAck);
     return true;
-}
-
-bool
-ClientProxy1_0::recvClipboard()
-{
-    // deprecated in protocol 1.0
-    return false;
-}
-
-bool
-ClientProxy1_0::recvGrabClipboard()
-{
-    // parse message
-    ClipboardID id;
-    UInt32 seqNum;
-    if (!ProtocolUtil::readf(getStream(), kMsgCClipboard + 4, &id, &seqNum)) {
-        return false;
-    }
-    LOG((CLOG_DEBUG "received client \"%s\" grabbed clipboard %d seqnum=%d", getName().c_str(), id, seqNum));
-
-    // validate
-    if (id >= kClipboardEnd) {
-        return false;
-    }
-
-    // notify
-    ClipboardInfo* info   = new ClipboardInfo;
-    info->m_id             = id;
-    info->m_sequenceNumber = seqNum;
-    m_events->addEvent(Event(m_events->forClipboard().clipboardGrabbed(),
-                            getEventTarget(), info));
-
-    return true;
-}
-
-//
-// ClientProxy1_0::ClientClipboard
-//
-
-ClientProxy1_0::ClientClipboard::ClientClipboard() :
-    m_clipboard(),
-    m_sequenceNumber(0),
-    m_dirty(true)
-{
-    // do nothing
 }

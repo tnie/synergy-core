@@ -297,8 +297,6 @@ private:
 
     // event handlers
     void                handleShapeChanged(const Event&, void*);
-    void                handleClipboardGrabbed(const Event&, void*);
-    void                handleClipboardChanged(const Event&, void*);
     void                handleKeyDownEvent(const Event&, void*);
     void                handleKeyUpEvent(const Event&, void*);
     void                handleKeyRepeatEvent(const Event&, void*);
@@ -465,8 +463,6 @@ private:
     String                m_dragFileExt;
     bool                m_ignoreFileTransfer;
     bool                m_disableLockToScreen;
-    bool                m_enableClipboard;
-    size_t              m_maximumClipboardSize;
 
     AutoThread          m_sendDragInfoThread;
     bool                m_waitDragInfoThread;

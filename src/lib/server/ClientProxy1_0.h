@@ -46,9 +46,6 @@ public:
                             UInt32 seqNum, KeyModifierMask mask,
                             bool forScreensaver) override;
     bool        leave() override;
-    void        setClipboard(ClipboardID, const IClipboard*) override;
-    void        grabClipboard(ClipboardID) override;
-    void        setClipboardDirty(ClipboardID, bool) override;
     void        keyDown(KeyID, KeyModifierMask, KeyButton, const String&) override;
     void        keyRepeat(KeyID, KeyModifierMask,
                             SInt32 count, KeyButton, const String&) override;
@@ -75,7 +72,6 @@ protected:
     virtual void        resetHeartbeatTimer();
     virtual void        addHeartbeatTimer();
     virtual void        removeHeartbeatTimer();
-    virtual bool        recvClipboard();
 private:
     void                disconnect();
     void                removeHandlers();
@@ -86,20 +82,6 @@ private:
     void                handleFlatline(const Event&, void*);
 
     bool                recvInfo();
-    bool                recvGrabClipboard();
-
-protected:
-    struct ClientClipboard {
-    public:
-        ClientClipboard();
-
-    public:
-        Clipboard        m_clipboard;
-        UInt32            m_sequenceNumber;
-        bool            m_dirty;
-    };
-
-    ClientClipboard    m_clipboard[kClipboardEnd];
 
 private:
     typedef bool (ClientProxy1_0::*MessageParser)(const UInt8*);

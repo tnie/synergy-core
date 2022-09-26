@@ -19,7 +19,6 @@
 #include "server/PrimaryClient.h"
 
 #include "synergy/Screen.h"
-#include "synergy/Clipboard.h"
 #include "base/Log.h"
 #include "synergy/AppUtil.h"
 //
@@ -31,10 +30,6 @@ PrimaryClient::PrimaryClient(const String& name, synergy::Screen* screen) :
     m_screen(screen),
     m_fakeInputCount(0)
 {
-    // all clipboards are clean
-    for (UInt32 i = 0; i < kClipboardEnd; ++i) {
-        m_clipboardDirty[i] = false;
-    }
 }
 
 PrimaryClient::~PrimaryClient()

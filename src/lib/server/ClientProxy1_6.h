@@ -28,12 +28,6 @@ public:
     ClientProxy1_6(const String& name, synergy::IStream* adoptedStream, Server* server, IEventQueue* events);
     ~ClientProxy1_6();
 
-    virtual void        setClipboard(ClipboardID id, const IClipboard* clipboard);
-    virtual bool        recvClipboard();
-
-private:
-    void                handleClipboardSendingEvent(const Event&, void*);
-
 private:
     IEventQueue*        m_events;
 };

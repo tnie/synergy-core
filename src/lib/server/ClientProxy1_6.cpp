@@ -20,7 +20,6 @@
 #include "server/Server.h"
 #include "synergy/ProtocolUtil.h"
 #include "synergy/StreamChunker.h"
-#include "synergy/ClipboardChunk.h"
 #include "io/IStream.h"
 #include "base/TMethodEventJob.h"
 #include "base/Log.h"
@@ -33,50 +32,8 @@ ClientProxy1_6::ClientProxy1_6(const String& name, synergy::IStream* stream, Ser
     ClientProxy1_5(name, stream, server, events),
     m_events(events)
 {
-    m_events->adoptHandler(m_events->forClipboard().clipboardSending(),
-                                this,
-                                new TMethodEventJob<ClientProxy1_6>(this,
-                                    &ClientProxy1_6::handleClipboardSendingEvent));
 }
 
 ClientProxy1_6::~ClientProxy1_6()
 {
-}
-
-void
-ClientProxy1_6::handleClipboardSendingEvent(const Event& event, void*)
-{
-    ClipboardChunk::send(getStream(), event.getDataObject());
-}
-
-bool
-ClientProxy1_6::recvClipboard()
-{
-    // parse message
-    static String dataCached;
-    ClipboardID id;
-    UInt32 seq;
-
-    int r = ClipboardChunk::assemble(getStream(), dataCached, id, seq);
-
-    if (r == kStart) {
-        size_t size = ClipboardChunk::getExpectedSize();
-        LOG((CLOG_DEBUG "receiving clipboard %d size=%d", id, size));
-    }
-    else if (r == kFinish) {
-        LOG((CLOG_DEBUG "received client \"%s\" clipboard %d seqnum=%d, size=%d",
-                getName().c_str(), id, seq, dataCached.size()));
-        // save clipboard
-        m_clipboard[id].m_clipboard.unmarshall(dataCached, 0);
-        m_clipboard[id].m_sequenceNumber = seq;
-        
-        // notify
-        ClipboardInfo* info = new ClipboardInfo;
-        info->m_id = id;
-        info->m_sequenceNumber = seq;
-        m_events->addEvent(Event(m_events->forClipboard().clipboardChanged(),
-                                 getEventTarget(), info));
-    }
-
-    return true;
 }

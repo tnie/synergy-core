@@ -95,8 +95,6 @@ Server::Server(
 	m_writeToDropDirThread(nullptr),
 	m_ignoreFileTransfer(false),
 	m_disableLockToScreen(false),
-	m_enableClipboard(true),
-	m_maximumClipboardSize(INT_MAX),
 	m_sendDragInfoThread(nullptr),
 	m_waitDragInfoThread(true),
 	m_args(args)
@@ -107,18 +105,6 @@ Server::Server(
 	assert(m_screen != NULL);
 
 	String primaryName = getName(primaryClient);
-
-	// clear clipboards
-	for (ClipboardID id = 0; id < kClipboardEnd; ++id) {
-		ClipboardInfo& clipboard   = m_clipboards[id];
-		clipboard.m_clipboardOwner  = primaryName;
-		clipboard.m_clipboardSeqNum = m_seqNum;
-		if (clipboard.m_clipboard.open(0)) {
-			clipboard.m_clipboard.empty();
-			clipboard.m_clipboard.close();
-		}
-		clipboard.m_clipboardData   = clipboard.m_clipboard.marshall();
-	}
 
 	// install event handlers
 	m_events->adoptHandler(Event::kTimer, this,
@@ -500,19 +486,6 @@ Server::switchScreen(BaseClientProxy* dst,
 			return;
 		}
 
-		// update the primary client's clipboards if we're leaving the
-		// primary screen.
-		if (m_active == m_primaryClient && m_enableClipboard) {
-			for (ClipboardID id = 0; id < kClipboardEnd; ++id) {
-				ClipboardInfo& clipboard = m_clipboards[id];
-				if (clipboard.m_clipboardOwner == getName(m_primaryClient)) {
-					onClipboardChanged(m_primaryClient,
-						id, clipboard.m_clipboardSeqNum);
-				}
-			}
-		}
-
-
 #if defined(__APPLE__)
         if (dst != m_primaryClient) {
             String secureInputApplication = m_primaryClient->getSecureInputApp();
@@ -535,17 +508,6 @@ Server::switchScreen(BaseClientProxy* dst,
 		m_active->enter(x, y, m_seqNum,
 								m_primaryClient->getToggleMask(),
 								forScreensaver);
-
-		if (m_enableClipboard) {
-			// send the clipboard data to new active screen
-			for (ClipboardID id = 0; id < kClipboardEnd; ++id) {
-				// Hackity hackity hack
-				if (m_clipboards[id].m_clipboard.marshall().size() > (m_maximumClipboardSize * 1024)) {
-					continue;
-				}
-				m_active->setClipboard(id, &m_clipboards[id].m_clipboard);
-			}
-		}
 
 		Server::SwitchToScreenInfo* info =
 			Server::SwitchToScreenInfo::alloc(m_active->getName());
@@ -1205,21 +1167,6 @@ Server::processOptions()
 		else if (id == kOptionDisableLockToScreen) {
 			m_disableLockToScreen = (value != 0);
 		}
-		else if (id == kOptionClipboardSharing) {
-			m_enableClipboard = value;
-			if (!m_enableClipboard) {
-				LOG((CLOG_NOTE "clipboard sharing is disabled"));
-			}
-		}
-		else if (id == kOptionClipboardSharingSize) {
-			if (value <= 0) {
-				m_maximumClipboardSize = 0;
-				LOG((CLOG_NOTE "clipboard sharing is disabled because the "
-							   "maximum shared clipboard size is set to 0"));
-			} else {
-				m_maximumClipboardSize = static_cast<size_t>(value);
-			}
-		}
 	}
 	if (m_relativeMoves && !newRelativeMoves) {
 		stopRelativeMoves();
@@ -1258,76 +1205,6 @@ Server::handleShapeChanged(const Event&, void* vclient)
 			onMouseMoveSecondary(0, 0);
 		}
 	}
-}
-
-void
-Server::handleClipboardGrabbed(const Event& event, void* vclient)
-{
-	if (!m_enableClipboard || (m_maximumClipboardSize == 0)) {
-		return;
-	}
-
-	// ignore events from unknown clients
-	BaseClientProxy* grabber = static_cast<BaseClientProxy*>(vclient);
-	if (m_clientSet.count(grabber) == 0) {
-		return;
-	}
-	const IScreen::ClipboardInfo* info =
-		static_cast<const IScreen::ClipboardInfo*>(event.getData());
-
-	// ignore grab if sequence number is old.  always allow primary
-	// screen to grab.
-	ClipboardInfo& clipboard = m_clipboards[info->m_id];
-	if (grabber != m_primaryClient &&
-		info->m_sequenceNumber < clipboard.m_clipboardSeqNum) {
-		LOG((CLOG_INFO "ignored screen \"%s\" grab of clipboard %d", getName(grabber).c_str(), info->m_id));
-		return;
-	}
-
-	// mark screen as owning clipboard
-	LOG((CLOG_INFO "screen \"%s\" grabbed clipboard %d from \"%s\"", getName(grabber).c_str(), info->m_id, clipboard.m_clipboardOwner.c_str()));
-	clipboard.m_clipboardOwner  = getName(grabber);
-	clipboard.m_clipboardSeqNum = info->m_sequenceNumber;
-
-	// clear the clipboard data (since it's not known at this point)
-	if (clipboard.m_clipboard.open(0)) {
-		clipboard.m_clipboard.empty();
-		clipboard.m_clipboard.close();
-	}
-	clipboard.m_clipboardData = clipboard.m_clipboard.marshall();
-
-	// tell all other screens to take ownership of clipboard.  tell the
-	// grabber that it's clipboard isn't dirty.
-	for (ClientList::iterator index = m_clients.begin();
-								index != m_clients.end(); ++index) {
-		BaseClientProxy* client = index->second;
-		if (client == grabber) {
-			client->setClipboardDirty(info->m_id, false);
-		}
-		else {
-			client->grabClipboard(info->m_id);
-		}
-	}
-
-    if (grabber == m_primaryClient && m_active != m_primaryClient) {
-        LOG((CLOG_INFO "clipboard grabbed, but we are already changed active screen. Resend clipboard data"));
-        for (ClipboardID id = 0; id < kClipboardEnd; ++id) {
-            onClipboardChanged(m_primaryClient, id, m_clipboards[id].m_clipboardSeqNum);
-        }
-    }
-}
-
-void
-Server::handleClipboardChanged(const Event& event, void* vclient)
-{
-	// ignore events from unknown clients
-	BaseClientProxy* sender = static_cast<BaseClientProxy*>(vclient);
-	if (m_clientSet.count(sender) == 0) {
-		return;
-	}
-	const IScreen::ClipboardInfo* info =
-		static_cast<const IScreen::ClipboardInfo*>(event.getData());
-	onClipboardChanged(sender, info->m_id, info->m_sequenceNumber);
 }
 
 void
@@ -2107,14 +1984,6 @@ Server::addClient(BaseClientProxy* client)
 							client->getEventTarget(),
 							new TMethodEventJob<Server>(this,
 								&Server::handleShapeChanged, client));
-	m_events->adoptHandler(m_events->forClipboard().clipboardGrabbed(),
-							client->getEventTarget(),
-							new TMethodEventJob<Server>(this,
-								&Server::handleClipboardGrabbed, client));
-	m_events->adoptHandler(m_events->forClipboard().clipboardChanged(),
-							client->getEventTarget(),
-							new TMethodEventJob<Server>(this,
-								&Server::handleClipboardChanged, client));
 
 	// add to list
 	m_clientSet.insert(client);
@@ -2282,21 +2151,6 @@ Server::forceLeaveClient(BaseClientProxy* client)
 	// tell primary client about the active sides
 	m_primaryClient->reconfigure(getActivePrimarySides());
 }
-
-
-//
-// Server::ClipboardInfo
-//
-
-Server::ClipboardInfo::ClipboardInfo() :
-	m_clipboard(),
-	m_clipboardData(),
-	m_clipboardOwner(),
-	m_clipboardSeqNum(0)
-{
-	// do nothing
-}
-
 
 //
 // Server::LockCursorToScreenInfo
