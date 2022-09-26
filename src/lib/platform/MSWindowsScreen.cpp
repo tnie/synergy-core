@@ -402,47 +402,6 @@ MSWindowsScreen::sendDragThread(void*)
     m_draggingStarted = false;
 }
 
-bool
-MSWindowsScreen::setClipboard(ClipboardID, const IClipboard* src)
-{
-    MSWindowsClipboard dst(m_window);
-    if (src != NULL) {
-        // save clipboard data
-        return Clipboard::copy(&dst, src);
-    }
-    else {
-        // assert clipboard ownership
-        if (!dst.open(0)) {
-            return false;
-        }
-        dst.empty();
-        dst.close();
-        return true;
-    }
-}
-
-void
-MSWindowsScreen::checkClipboards()
-{
-    // if we think we own the clipboard but we don't then somebody
-    // grabbed the clipboard on this screen without us knowing.
-    // tell the server that this screen grabbed the clipboard.
-    //
-    // this works around bugs in the clipboard viewer chain.
-    // sometimes NT will simply never send WM_DRAWCLIPBOARD
-    // messages for no apparent reason and rebooting fixes the
-    // problem.  since we don't want a broken clipboard until the
-    // next reboot we do this double check.  clipboard ownership
-    // won't be reflected on other screens until we leave but at
-    // least the clipboard itself will work.
-    if (m_ownClipboard && !MSWindowsClipboard::isOwnedBySynergy()) {
-        LOG((CLOG_DEBUG "clipboard changed: lost ownership and no notification received"));
-        m_ownClipboard = false;
-        sendClipboardEvent(m_events->forClipboard().clipboardGrabbed(), kClipboardClipboard);
-        sendClipboardEvent(m_events->forClipboard().clipboardGrabbed(), kClipboardSelection);
-    }
-}
-
 void
 MSWindowsScreen::openScreensaver(bool notify)
 {
@@ -513,14 +472,6 @@ void*
 MSWindowsScreen::getEventTarget() const
 {
     return const_cast<MSWindowsScreen*>(this);
-}
-
-bool
-MSWindowsScreen::getClipboard(ClipboardID, IClipboard* dst) const
-{
-    MSWindowsClipboard src(m_window);
-    Clipboard::copy(dst, &src);
-    return true;
 }
 
 void
@@ -977,19 +928,6 @@ void
 MSWindowsScreen::sendEvent(Event::Type type, void* data)
 {
     m_events->addEvent(Event(type, getEventTarget(), data));
-}
-
-void
-MSWindowsScreen::sendClipboardEvent(Event::Type type, ClipboardID id)
-{
-    ClipboardInfo* info   = (ClipboardInfo*)malloc(sizeof(ClipboardInfo));
-    if (info == NULL) {
-        LOG((CLOG_ERR "malloc failed on %s:%s", __FILE__, __LINE__ ));
-        return;
-    }
-    info->m_id             = id;
-    info->m_sequenceNumber = m_sequenceNumber;
-    sendEvent(type, info);
 }
 
 void

@@ -19,7 +19,6 @@
 #pragma once
 
 #include "server/ClientProxy.h"
-#include "synergy/Clipboard.h"
 #include "synergy/protocol_types.h"
 
 class Event;
@@ -38,7 +37,6 @@ public:
     ClientProxy1_0& operator=(ClientProxy1_0 &&) =delete;
 
     // IScreen
-    bool        getClipboard(ClipboardID id, IClipboard*) const override;
     void        getShape(SInt32& x, SInt32& y,
                             SInt32& width, SInt32& height) const override;
     void        getCursorPos(SInt32& x, SInt32& y) const override;

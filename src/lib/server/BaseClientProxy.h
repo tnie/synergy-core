@@ -61,7 +61,6 @@ public:
 
     // IScreen
     virtual void*        getEventTarget() const = 0;
-    virtual bool        getClipboard(ClipboardID id, IClipboard*) const = 0;
     virtual void        getShape(SInt32& x, SInt32& y,
                             SInt32& width, SInt32& height) const = 0;
     virtual void        getCursorPos(SInt32& x, SInt32& y) const = 0;
@@ -71,9 +70,6 @@ public:
                             UInt32 seqNum, KeyModifierMask mask,
                             bool forScreensaver) = 0;
     virtual bool        leave() = 0;
-    virtual void        setClipboard(ClipboardID, const IClipboard*) = 0;
-    virtual void        grabClipboard(ClipboardID) = 0;
-    virtual void        setClipboardDirty(ClipboardID, bool) = 0;
     virtual void        keyDown(KeyID, KeyModifierMask, KeyButton, const String&) = 0;
     virtual void        keyRepeat(KeyID, KeyModifierMask,
                             SInt32 count, KeyButton, const String& lang) = 0;

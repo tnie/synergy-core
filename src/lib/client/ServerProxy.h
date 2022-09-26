@@ -19,7 +19,6 @@
 #pragma once
 
 #include "synergy/languages/LanguageManager.h"
-#include "synergy/clipboard_types.h"
 #include "synergy/key_types.h"
 #include "base/Event.h"
 #include "base/Stopwatch.h"
@@ -55,8 +54,6 @@ public:
     //@{
 
     void                onInfoChanged();
-    bool                onGrabClipboard(ClipboardID);
-    void                onClipboardChanged(ClipboardID, const IClipboard*);
 
     //@}
 

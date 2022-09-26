@@ -19,7 +19,6 @@
 #pragma once
 
 #include "synergy/DragInformation.h"
-#include "synergy/clipboard_types.h"
 #include "synergy/IScreen.h"
 #include "synergy/IPrimaryScreen.h"
 #include "synergy/ISecondaryScreen.h"
@@ -72,20 +71,6 @@ public:
     screen.  Secondary screens should not fail.
     */
     virtual bool        leave() = 0;
-
-    //! Set clipboard
-    /*!
-    Set the contents of the system clipboard indicated by \c id.
-    */
-    virtual bool        setClipboard(ClipboardID id, const IClipboard*) = 0;
-
-    //! Check clipboard owner
-    /*!
-    Check ownership of all clipboards and post grab events for any that
-    have changed.  This is used as a backup in case the system doesn't
-    reliably report clipboard ownership changes.
-    */
-    virtual void        checkClipboards() = 0;
 
     //! Open screen saver
     /*!
@@ -153,7 +138,6 @@ public:
 
     // IScreen overrides
     virtual void*        getEventTarget() const = 0;
-    virtual bool        getClipboard(ClipboardID id, IClipboard*) const = 0;
     virtual void        getShape(SInt32& x, SInt32& y,
                             SInt32& width, SInt32& height) const = 0;
     virtual void        getCursorPos(SInt32& x, SInt32& y) const = 0;

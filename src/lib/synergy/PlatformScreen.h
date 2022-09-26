@@ -36,7 +36,6 @@ public:
 
     // IScreen overrides
     virtual void*        getEventTarget() const = 0;
-    virtual bool        getClipboard(ClipboardID id, IClipboard*) const = 0;
     virtual void        getShape(SInt32& x, SInt32& y,
                             SInt32& width, SInt32& height) const = 0;
     virtual void        getCursorPos(SInt32& x, SInt32& y) const = 0;
@@ -89,8 +88,6 @@ public:
     virtual void        disable() = 0;
     virtual void        enter() = 0;
     virtual bool        leave() = 0;
-    virtual bool        setClipboard(ClipboardID, const IClipboard*) = 0;
-    virtual void        checkClipboards() = 0;
     virtual void        openScreensaver(bool notify) = 0;
     virtual void        closeScreensaver() = 0;
     virtual void        screensaver(bool activate) = 0;

@@ -18,7 +18,6 @@
 
 #pragma once
 
-#include "synergy/clipboard_types.h"
 #include "base/Event.h"
 #include "base/EventTypes.h"
 #include "common/IInterface.h"
@@ -31,11 +30,6 @@ This interface defines the methods common to all screens.
 */
 class IScreen : public IInterface {
 public:
-    struct ClipboardInfo {
-    public:
-        ClipboardID        m_id;
-        UInt32            m_sequenceNumber;
-    };
 
     //! @name accessors
     //@{
@@ -45,13 +39,6 @@ public:
     Returns the target used for events created by this object.
     */
     virtual void*        getEventTarget() const = 0;
-
-    //! Get clipboard
-    /*!
-    Save the contents of the clipboard indicated by \c id and return
-    true iff successful.
-    */
-    virtual bool        getClipboard(ClipboardID id, IClipboard*) const = 0;
 
     //! Get screen shape
     /*!

@@ -139,9 +139,6 @@ Screen::leave()
         leaveSecondary();
     }
 
-    // make sure our idea of clipboard ownership is correct
-    m_screen->checkClipboards();
-
     // now not on screen
     m_entered = false;
 
@@ -160,18 +157,6 @@ Screen::warpCursor(SInt32 x, SInt32 y)
 {
     assert(m_isPrimary);
     m_screen->warpCursor(x, y);
-}
-
-void
-Screen::setClipboard(ClipboardID id, const IClipboard* clipboard)
-{
-    m_screen->setClipboard(id, clipboard);
-}
-
-void
-Screen::grabClipboard(ClipboardID id)
-{
-    m_screen->setClipboard(id, NULL);
 }
 
 void
@@ -442,12 +427,6 @@ Screen::getEventTarget() const
     return m_screen;
 }
 
-bool
-Screen::getClipboard(ClipboardID id, IClipboard* clipboard) const
-{
-    return m_screen->getClipboard(id, clipboard);
-}
-
 void
 Screen::getShape(SInt32& x, SInt32& y, SInt32& w, SInt32& h) const
 {
@@ -473,10 +452,6 @@ Screen::enablePrimary()
 void
 Screen::enableSecondary()
 {
-    // assume primary has all clipboards
-    for (ClipboardID id = 0; id < kClipboardEnd; ++id) {
-        grabClipboard(id);
-    }
 
 }
 

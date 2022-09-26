@@ -118,7 +118,6 @@ public:
 
     // IScreen overrides
     void*       getEventTarget() const override;
-    bool        getClipboard(ClipboardID id, IClipboard*) const override;
     void        getShape(SInt32& x, SInt32& y,
                             SInt32& width, SInt32& height) const override;
     void        getCursorPos(SInt32& x, SInt32& y) const override;
@@ -128,9 +127,6 @@ public:
                             UInt32 seqNum, KeyModifierMask mask,
                             bool forScreensaver) override;
     bool        leave() override;
-    void        setClipboard(ClipboardID, const IClipboard*) override;
-    void        grabClipboard(ClipboardID) override;
-    void        setClipboardDirty(ClipboardID, bool) override;
     void        keyDown(KeyID, KeyModifierMask, KeyButton, const String&) override;
     void        keyRepeat(KeyID, KeyModifierMask,
                             SInt32 count, KeyButton, const String&) override;
@@ -153,6 +149,5 @@ public:
     bool                isPrimary() const override { return true; }
 private:
     synergy::Screen*    m_screen;
-    bool                m_clipboardDirty[kClipboardEnd];
     SInt32                m_fakeInputCount;
 };

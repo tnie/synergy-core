@@ -19,7 +19,6 @@
 #pragma once
 
 #include "synergy/DragInformation.h"
-#include "synergy/clipboard_types.h"
 #include "synergy/IScreen.h"
 #include "synergy/key_types.h"
 #include "synergy/mouse_types.h"
@@ -97,19 +96,6 @@ public:
     returning.
     */
     void                warpCursor(SInt32 x, SInt32 y);
-
-    //! Set clipboard
-    /*!
-    Sets the system's clipboard contents.  This is usually called
-    soon after an enter().
-    */
-    void                setClipboard(ClipboardID, const IClipboard*);
-
-    //! Grab clipboard
-    /*!
-    Grabs (i.e. take ownership of) the system clipboard.
-    */
-    void                grabClipboard(ClipboardID);
 
     //! Activate/deactivate screen saver
     /*!
@@ -307,7 +293,6 @@ public:
 
     // IScreen overrides
     virtual void*        getEventTarget() const;
-    virtual bool        getClipboard(ClipboardID id, IClipboard*) const;
     virtual void        getShape(SInt32& x, SInt32& y,
                             SInt32& width, SInt32& height) const;
     virtual void        getCursorPos(SInt32& x, SInt32& y) const;

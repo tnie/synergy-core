@@ -20,9 +20,7 @@
 
 #include "client/Client.h"
 #include "synergy/FileChunk.h"
-#include "synergy/ClipboardChunk.h"
 #include "synergy/StreamChunker.h"
-#include "synergy/Clipboard.h"
 #include "synergy/ProtocolUtil.h"
 #include "synergy/option_types.h"
 #include "synergy/protocol_types.h"
@@ -377,23 +375,6 @@ ServerProxy::onInfoChanged()
 
     // send info update
     queryInfo();
-}
-
-bool
-ServerProxy::onGrabClipboard(ClipboardID id)
-{
-    LOG((CLOG_DEBUG1 "sending clipboard %d changed", id));
-    ProtocolUtil::writef(m_stream, kMsgCClipboard, id, m_seqNum);
-    return true;
-}
-
-void
-ServerProxy::onClipboardChanged(ClipboardID id, const IClipboard* clipboard)
-{
-    String data = IClipboard::marshall(clipboard);
-    LOG((CLOG_DEBUG "sending clipboard %d seqnum=%d", id, m_seqNum));
-
-    StreamChunker::sendClipboard(data, data.size(), id, m_seqNum, m_events, this);
 }
 
 void

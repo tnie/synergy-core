@@ -62,7 +62,6 @@ public:
 
     // IScreen
     void*       getEventTarget() const override;
-    bool        getClipboard(ClipboardID id, IClipboard*) const override = 0;
     void        getShape(SInt32& x, SInt32& y,
                             SInt32& width, SInt32& height) const override = 0;
     void        getCursorPos(SInt32& x, SInt32& y) const override = 0;
@@ -72,9 +71,6 @@ public:
                             UInt32 seqNum, KeyModifierMask mask,
                             bool forScreensaver) override = 0;
     bool        leave() override = 0;
-    void        setClipboard(ClipboardID, const IClipboard*) override = 0;
-    void        grabClipboard(ClipboardID) override = 0;
-    void        setClipboardDirty(ClipboardID, bool) override = 0;
     void        keyDown(KeyID, KeyModifierMask, KeyButton, const String&) override = 0;
     void        keyRepeat(KeyID, KeyModifierMask,
                             SInt32 count, KeyButton, const String& lang) override = 0;

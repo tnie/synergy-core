@@ -18,7 +18,6 @@
 
 #pragma once
 
-#include "synergy/clipboard_types.h"
 #include "synergy/IScreen.h"
 #include "synergy/key_types.h"
 #include "synergy/mouse_types.h"
@@ -53,30 +52,6 @@ public:
     client's screen (because, for example, a button is down).
     */
     virtual bool        leave() = 0;
-
-    //! Set clipboard
-    /*!
-    Update the client's clipboard.  This implies that the client's
-    clipboard is now up to date.  If the client's clipboard was
-    already known to be up to date then this may do nothing.  \c data
-    has marshalled clipboard data.
-    */
-    virtual void        setClipboard(ClipboardID, const IClipboard*) = 0;
-
-    //! Grab clipboard
-    /*!
-    Grab (i.e. take ownership of) the client's clipboard.  Since this
-    is called when another client takes ownership of the clipboard it
-    implies that the client's clipboard is out of date.
-    */
-    virtual void        grabClipboard(ClipboardID) = 0;
-
-    //! Mark clipboard dirty
-    /*!
-    Mark the client's clipboard as dirty (out of date) or clean (up to
-    date).
-    */
-    virtual void        setClipboardDirty(ClipboardID, bool dirty) = 0;
 
     //! Notify of key press
     /*!
@@ -169,7 +144,6 @@ public:
 
     // IScreen overrides
     virtual void*        getEventTarget() const = 0;
-    virtual bool        getClipboard(ClipboardID id, IClipboard*) const = 0;
     virtual void        getShape(SInt32& x, SInt32& y,
                             SInt32& width, SInt32& height) const = 0;
     virtual void        getCursorPos(SInt32& x, SInt32& y) const = 0;

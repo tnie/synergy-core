@@ -20,7 +20,6 @@
 
 #include "synergy/IClient.h"
 
-#include "synergy/Clipboard.h"
 #include "synergy/DragInformation.h"
 #include "synergy/INode.h"
 #include "synergy/ClientArgs.h"
@@ -150,7 +149,6 @@ public:
 
     // IScreen overrides
     virtual void*        getEventTarget() const;
-    virtual bool        getClipboard(ClipboardID id, IClipboard*) const;
     virtual void        getShape(SInt32& x, SInt32& y,
                             SInt32& width, SInt32& height) const;
     virtual void        getCursorPos(SInt32& x, SInt32& y) const;
@@ -160,9 +158,6 @@ public:
                             UInt32 seqNum, KeyModifierMask mask,
                             bool forScreensaver);
     virtual bool        leave();
-    virtual void        setClipboard(ClipboardID, const IClipboard*);
-    virtual void        grabClipboard(ClipboardID);
-    virtual void        setClipboardDirty(ClipboardID, bool);
     virtual void        keyDown(KeyID, KeyModifierMask, KeyButton, const String&);
     virtual void        keyRepeat(KeyID, KeyModifierMask,
                             SInt32 count, KeyButton, const String& lang);
@@ -178,7 +173,6 @@ public:
     virtual String        getName() const;
 
 private:
-    void                sendClipboard(ClipboardID);
     void                sendEvent(Event::Type, void*);
     void                sendConnectionFailedEvent(const char* msg);
     void                sendFileChunk(const void* data);
@@ -226,10 +220,6 @@ private:
     bool                m_active;
     bool                m_suspended;
     bool                m_connectOnResume;
-    bool                m_ownClipboard[kClipboardEnd];
-    bool                m_sentClipboard[kClipboardEnd];
-    IClipboard::Time    m_timeClipboard[kClipboardEnd];
-    String              m_dataClipboard[kClipboardEnd];
     IEventQueue*        m_events;
     std::size_t         m_expectedFileSize;
     String              m_receivedFileData;

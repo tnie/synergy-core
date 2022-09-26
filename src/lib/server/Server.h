@@ -19,8 +19,6 @@
 #pragma once
 
 #include "server/Config.h"
-#include "synergy/clipboard_types.h"
-#include "synergy/Clipboard.h"
 #include "synergy/key_types.h"
 #include "synergy/mouse_types.h"
 #include "synergy/INode.h"
@@ -324,8 +322,6 @@ private:
     void                handleFileRecieveCompletedEvent(const Event&, void*);
 
     // event processing
-    void                onClipboardChanged(BaseClientProxy* sender,
-                            ClipboardID id, UInt32 seqNum);
     void                onScreensaver(bool activated);
     void                onKeyDown(KeyID, KeyModifierMask, KeyButton, const String&,
                             const char* screens);
@@ -379,16 +375,6 @@ public:
     bool                m_mock;
 
 private:
-    class ClipboardInfo {
-    public:
-        ClipboardInfo();
-
-    public:
-        Clipboard        m_clipboard;
-        String            m_clipboardData;
-        String            m_clipboardOwner;
-        UInt32            m_clipboardSeqNum;
-    };
 
     // the primary screen client
     PrimaryClient*        m_primaryClient;
@@ -425,9 +411,6 @@ private:
 
     // input filter (from m_config);
     InputFilter*        m_inputFilter;
-
-    // clipboard cache
-    ClipboardInfo        m_clipboards[kClipboardEnd];
 
     // state saved when screen saver activates
     BaseClientProxy*    m_activeSaver;

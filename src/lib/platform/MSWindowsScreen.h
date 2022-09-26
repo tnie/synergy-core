@@ -74,7 +74,6 @@ public:
 
     // IScreen overrides
     virtual void*        getEventTarget() const;
-    virtual bool        getClipboard(ClipboardID id, IClipboard*) const;
     virtual void        getShape(SInt32& x, SInt32& y,
                             SInt32& width, SInt32& height) const;
     virtual void        getCursorPos(SInt32& x, SInt32& y) const;
@@ -130,8 +129,6 @@ public:
     virtual void        disable();
     virtual void        enter();
     virtual bool        leave();
-    virtual bool        setClipboard(ClipboardID, const IClipboard*);
-    virtual void        checkClipboards();
     virtual void        openScreensaver(bool notify);
     virtual void        closeScreensaver();
     virtual void        screensaver(bool activate);
@@ -169,7 +166,6 @@ private:
 public: // HACK
     void                sendEvent(Event::Type type, void* = NULL);
 private: // HACK
-    void                sendClipboardEvent(Event::Type type, ClipboardID id);
 
     // handle message before it gets dispatched.  returns true iff
     // the message should not be dispatched.

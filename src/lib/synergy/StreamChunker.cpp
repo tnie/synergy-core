@@ -20,7 +20,6 @@
 #include "mt/Lock.h"
 #include "mt/Mutex.h"
 #include "synergy/FileChunk.h"
-#include "synergy/ClipboardChunk.h"
 #include "synergy/protocol_types.h"
 #include "base/EventTypes.h"
 #include "base/Event.h"
@@ -108,52 +107,6 @@ StreamChunker::sendFile(
     file.close();
     
     s_isChunkingFile = false;
-}
-
-void
-StreamChunker::sendClipboard(
-                String& data,
-                size_t size,
-                ClipboardID id,
-                UInt32 sequence,
-                IEventQueue* events,
-                void* eventTarget)
-{
-    // send first message (data size)
-    String dataSize = synergy::string::sizeTypeToString(size);
-    ClipboardChunk* sizeMessage = ClipboardChunk::start(id, sequence, dataSize);
-    
-    events->addEvent(Event(events->forClipboard().clipboardSending(), eventTarget, sizeMessage));
-
-    // send clipboard chunk with a fixed size
-    size_t sentLength = 0;
-    size_t chunkSize = g_chunkSize;
-    
-    while (true) {
-        events->addEvent(Event(events->forFile().keepAlive(), eventTarget));
-        
-        // make sure we don't read too much from the mock data.
-        if (sentLength + chunkSize > size) {
-            chunkSize = size - sentLength;
-        }
-
-        String chunk(data.substr(sentLength, chunkSize).c_str(), chunkSize);
-        ClipboardChunk* dataChunk = ClipboardChunk::data(id, sequence, chunk);
-        
-        events->addEvent(Event(events->forClipboard().clipboardSending(), eventTarget, dataChunk));
-
-        sentLength += chunkSize;
-        if (sentLength == size) {
-            break;
-        }
-    }
-
-    // send last message
-    ClipboardChunk* end = ClipboardChunk::end(id, sequence);
-
-    events->addEvent(Event(events->forClipboard().clipboardSending(), eventTarget, end));
-    
-    LOG((CLOG_DEBUG "sent clipboard size=%d", sentLength));
 }
 
 void

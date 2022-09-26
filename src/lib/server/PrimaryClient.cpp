@@ -106,12 +106,6 @@ PrimaryClient::getEventTarget() const
     return m_screen->getEventTarget();
 }
 
-bool
-PrimaryClient::getClipboard(ClipboardID id, IClipboard* clipboard) const
-{
-    return m_screen->getClipboard(id, clipboard);
-}
-
 void
 PrimaryClient::getShape(SInt32& x, SInt32& y,
                 SInt32& width, SInt32& height) const
@@ -152,35 +146,6 @@ bool
 PrimaryClient::leave()
 {
     return m_screen->leave();
-}
-
-void
-PrimaryClient::setClipboard(ClipboardID id, const IClipboard* clipboard)
-{
-    // ignore if this clipboard is already clean
-    if (m_clipboardDirty[id]) {
-        // this clipboard is now clean
-        m_clipboardDirty[id] = false;
-
-        // set clipboard
-        m_screen->setClipboard(id, clipboard);
-    }
-}
-
-void
-PrimaryClient::grabClipboard(ClipboardID id)
-{
-    // grab clipboard
-    m_screen->grabClipboard(id);
-
-    // clipboard is dirty (because someone else owns it now)
-    m_clipboardDirty[id] = true;
-}
-
-void
-PrimaryClient::setClipboardDirty(ClipboardID id, bool dirty)
-{
-    m_clipboardDirty[id] = dirty;
 }
 
 void

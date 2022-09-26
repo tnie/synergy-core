@@ -44,24 +44,6 @@ ClientProxy1_6::~ClientProxy1_6()
 }
 
 void
-ClientProxy1_6::setClipboard(ClipboardID id, const IClipboard* clipboard)
-{
-    // ignore if this clipboard is already clean
-    if (m_clipboard[id].m_dirty) {
-        // this clipboard is now clean
-        m_clipboard[id].m_dirty = false;
-        Clipboard::copy(&m_clipboard[id].m_clipboard, clipboard);
-
-        String data = m_clipboard[id].m_clipboard.marshall();
-
-        size_t size = data.size();
-        LOG((CLOG_DEBUG "sending clipboard %d to \"%s\"", id, getName().c_str()));
-
-        StreamChunker::sendClipboard(data, size, id, 0, m_events, this);
-    }
-}
-
-void
 ClientProxy1_6::handleClipboardSendingEvent(const Event& event, void*)
 {
     ClipboardChunk::send(getStream(), event.getDataObject());

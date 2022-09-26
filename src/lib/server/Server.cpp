@@ -1568,52 +1568,6 @@ Server::handleFileRecieveCompletedEvent(const Event& event, void*)
 }
 
 void
-Server::onClipboardChanged(BaseClientProxy* sender,
-				ClipboardID id, UInt32 seqNum)
-{
-	ClipboardInfo& clipboard = m_clipboards[id];
-
-	// ignore update if sequence number is old
-	if (seqNum < clipboard.m_clipboardSeqNum) {
-		LOG((CLOG_INFO "ignored screen \"%s\" update of clipboard %d (missequenced)", getName(sender).c_str(), id));
-		return;
-	}
-
-	// should be the expected client
-	assert(sender == m_clients.find(clipboard.m_clipboardOwner)->second);
-
-	// get data
-	sender->getClipboard(id, &clipboard.m_clipboard);
-
-	String data = clipboard.m_clipboard.marshall();
-	if (data.size() > m_maximumClipboardSize * 1024) {
-		LOG((CLOG_NOTE "not updating clipboard because it's over the size limit (%i KB) configured by the server",
-			m_maximumClipboardSize));
-		return;
-	}
-
-    // ignore if data hasn't changed
-	if (data == clipboard.m_clipboardData) {
-		LOG((CLOG_DEBUG "ignored screen \"%s\" update of clipboard %d (unchanged)", clipboard.m_clipboardOwner.c_str(), id));
-		return;
-	}
-
-	// got new data
-	LOG((CLOG_INFO "screen \"%s\" updated clipboard %d", clipboard.m_clipboardOwner.c_str(), id));
-	clipboard.m_clipboardData = data;
-
-	// tell all clients except the sender that the clipboard is dirty
-	for (ClientList::const_iterator index = m_clients.begin();
-								index != m_clients.end(); ++index) {
-		BaseClientProxy* client = index->second;
-		client->setClipboardDirty(id, client != sender);
-	}
-
-	// send the new clipboard to the active screen
-	m_active->setClipboard(id, &clipboard.m_clipboard);
-}
-
-void
 Server::onScreensaver(bool activated)
 {
 	LOG((CLOG_DEBUG "onScreenSaver %s", activated ? "activated" : "deactivated"));

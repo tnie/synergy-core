@@ -230,13 +230,6 @@ ClientProxy1_0::handleFlatline(const Event&, void*)
     disconnect();
 }
 
-bool
-ClientProxy1_0::getClipboard(ClipboardID id, IClipboard* clipboard) const
-{
-    Clipboard::copy(clipboard, &m_clipboard[id].m_clipboard);
-    return true;
-}
-
 void
 ClientProxy1_0::getShape(SInt32& x, SInt32& y, SInt32& w, SInt32& h) const
 {
@@ -271,28 +264,6 @@ ClientProxy1_0::leave()
 
     // we can never prevent the user from leaving
     return true;
-}
-
-void
-ClientProxy1_0::setClipboard(ClipboardID id, const IClipboard* clipboard)
-{
-    // ignore -- deprecated in protocol 1.0
-}
-
-void
-ClientProxy1_0::grabClipboard(ClipboardID id)
-{
-    LOG((CLOG_DEBUG "send grab clipboard %d to \"%s\"", id, getName().c_str()));
-    ProtocolUtil::writef(getStream(), kMsgCClipboard, id, 0);
-
-    // this clipboard is now dirty
-    m_clipboard[id].m_dirty = true;
-}
-
-void
-ClientProxy1_0::setClipboardDirty(ClipboardID id, bool dirty)
-{
-    m_clipboard[id].m_dirty = dirty;
 }
 
 void

@@ -233,12 +233,6 @@ Client::getEventTarget() const
     return m_screen->getEventTarget();
 }
 
-bool
-Client::getClipboard(ClipboardID id, IClipboard* clipboard) const
-{
-    return m_screen->getClipboard(id, clipboard);
-}
-
 void
 Client::getShape(SInt32& x, SInt32& y, SInt32& w, SInt32& h) const
 {
@@ -281,28 +275,6 @@ Client::leave()
     }
 
     return true;
-}
-
-void
-Client::setClipboard(ClipboardID id, const IClipboard* clipboard)
-{
-     m_screen->setClipboard(id, clipboard);
-    m_ownClipboard[id]  = false;
-    m_sentClipboard[id] = false;
-}
-
-void
-Client::grabClipboard(ClipboardID id)
-{
-    m_screen->grabClipboard(id);
-    m_ownClipboard[id]  = false;
-    m_sentClipboard[id] = false;
-}
-
-void
-Client::setClipboardDirty(ClipboardID, bool)
-{
-    assert(0 && "shouldn't be called");
 }
 
 void
@@ -401,46 +373,6 @@ String
 Client::getName() const
 {
     return m_name;
-}
-
-void
-Client::sendClipboard(ClipboardID id)
-{
-    // note -- m_mutex must be locked on entry
-    assert(m_screen != NULL);
-    assert(m_server != NULL);
-
-    // get clipboard data.  set the clipboard time to the last
-    // clipboard time before getting the data from the screen
-    // as the screen may detect an unchanged clipboard and
-    // avoid copying the data.
-    Clipboard clipboard;
-    if (clipboard.open(m_timeClipboard[id])) {
-        clipboard.close();
-    }
-    m_screen->getClipboard(id, &clipboard);
-
-    // check time
-    if (m_timeClipboard[id] == 0 ||
-        clipboard.getTime() != m_timeClipboard[id]) {
-        // marshall the data
-		String data = clipboard.marshall();
-		if (data.size() >= m_maximumClipboardSize * 1024) {
-			LOG((CLOG_NOTE "Skipping clipboard transfer because the clipboard"
-				" contents exceeds the %i MB size limit set by the server",
-				m_maximumClipboardSize / 1024));
-			return;
-		}
-
-		// save new time
-		m_timeClipboard[id] = clipboard.getTime();
-        // save and send data if different or not yet sent
-        if (!m_sentClipboard[id] || data != m_dataClipboard[id]) {
-            m_sentClipboard[id] = true;
-            m_dataClipboard[id] = data;
-            m_server->onClipboardChanged(id, &clipboard);
-        }
-    }
 }
 
 void
