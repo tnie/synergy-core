@@ -104,10 +104,10 @@ SerialKeyEdition::getDisplayName() const
     switch (getType())
     {
         case kBasic_China:
-            DisplayName = "Synergy 中文版";
+            DisplayName = "Synergy Chinese";
             break;
         case kPro_China:
-            DisplayName = "Synergy Pro 中文版";
+            DisplayName = "Synergy Pro Chinese";
             break;
         case kLite:
             DisplayName = "Synergy 1";
