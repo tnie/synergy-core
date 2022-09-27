@@ -23,8 +23,6 @@ endif()
 
 add_library(net STATIC ${sources})
 target_link_libraries(net
-    PUBLIC
-        OpenSSL::SSL
     PRIVATE
         mt
         io
@@ -32,7 +30,6 @@ target_link_libraries(net
 if(WIN32)
     target_link_libraries(net
         PRIVATE
-            Crypt32
             ws2_32
     )
 endif()

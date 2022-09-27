@@ -146,7 +146,6 @@ TEST_F(NetworkTests, sendToClient_mockData)
 
     lib::synergy::ClientArgs clientArgs;
     clientArgs.m_enableDragDrop = true;
-    clientArgs.m_enableCrypto = false;
     Client client(&m_events, "stub", serverAddress, clientSocketFactory, &clientScreen, clientArgs);
         
     m_events.adoptHandler(
@@ -204,7 +203,6 @@ TEST_F(NetworkTests, sendToClient_mockFile)
 
     lib::synergy::ClientArgs clientArgs;
     clientArgs.m_enableDragDrop = true;
-    clientArgs.m_enableCrypto = false;
     Client client(&m_events, "stub", serverAddress, clientSocketFactory, &clientScreen, clientArgs);
         
     m_events.adoptHandler(
@@ -255,7 +253,6 @@ TEST_F(NetworkTests, sendToServer_mockData)
 
     lib::synergy::ClientArgs clientArgs;
     clientArgs.m_enableDragDrop = true;
-    clientArgs.m_enableCrypto = false;
     Client client(&m_events, "stub", serverAddress, clientSocketFactory, &clientScreen, clientArgs);
     
     m_events.adoptHandler(
@@ -312,7 +309,6 @@ TEST_F(NetworkTests, sendToServer_mockFile)
 
     lib::synergy::ClientArgs clientArgs;
     clientArgs.m_enableDragDrop = true;
-    clientArgs.m_enableCrypto = false;
     Client client(&m_events, "stub", serverAddress, clientSocketFactory, &clientScreen, clientArgs);
 
     m_events.adoptHandler(

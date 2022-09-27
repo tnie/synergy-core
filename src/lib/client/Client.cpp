@@ -33,7 +33,6 @@
 #include "net/TCPSocket.h"
 #include "net/IDataSocket.h"
 #include "net/ISocketFactory.h"
-#include "net/SecureSocket.h"
 #include "arch/Arch.h"
 #include "base/Log.h"
 #include "base/IEventQueue.h"
