@@ -46,7 +46,7 @@ ArchTimeUnix::~ArchTimeUnix()
 double
 ArchTimeUnix::time()
 {
-    struct timeval t;
-    gettimeofday(&t, NULL);
-    return (double)t.tv_sec + 1.0e-6 * (double)t.tv_usec;
+    struct timespec t;
+    clock_gettime(CLOCK_MONOTONIC, &t);
+    return (double)t.tv_sec + 1.0e-9 * (double)t.tv_nsec;
 }
